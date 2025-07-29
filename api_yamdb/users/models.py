@@ -1,20 +1,22 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
-
-USER = 'user'
-MODERATOR = 'moderator'
-ADMIN = 'admin'
-ROLE_CHOICES = [
-    (USER, 'Пользователь'),
-    (MODERATOR, 'Модератор'),
-    (ADMIN, 'Администратор')
-]
+from .constants import ROLE_CHOICES, USER, ADMIN, MODERATOR
 
 
 class MyUser(AbstractUser):
-    username = models.CharField(unique=True, max_length=20)
-    email = models.EmailField(unique=True)
+    username = models.CharField(
+        'Имя пользователя',
+        unique=True,
+        max_length=150
+    )
+    email = models.EmailField('Электронная почта', unique=True, max_length=254)
+    first_name = models.CharField('Имя', max_length=150, blank=True)
+    last_name = models.CharField(
+        'Фамилия',
+        max_length=150,
+        blank=True
+    )
     bio = models.TextField('Биография', blank=True)
     role = models.CharField(
         'Права доступа',
