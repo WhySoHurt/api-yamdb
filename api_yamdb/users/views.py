@@ -1,11 +1,12 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from users.serializers import SignUpSerializer, TokenSerializer
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
-from django.conf import settings
 from django.utils.crypto import get_random_string
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from users.serializers import SignUpSerializer, TokenSerializer
 
 User = get_user_model()
 
