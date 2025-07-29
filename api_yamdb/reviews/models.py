@@ -65,7 +65,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username} - {self.title.name}"
+        return f"{self.author.username} - {self.title.name}"
 
 
 class Comment(models.Model):
@@ -81,4 +81,4 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return f"{self.user.username} - {self.review}"
+        return f"{self.author.username} - {self.review}"
