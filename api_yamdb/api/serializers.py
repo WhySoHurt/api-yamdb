@@ -12,6 +12,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     Автор подставляется автоматически в ReviewViewSet.
     """
+    
     author = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault())
 
@@ -26,9 +27,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         """
         request = self.context['request']
         if request.method == 'POST':
-            title_id = self.context['view'].kwargs.get('title_id')
+            title_id = self.context['view'].kwargs.get('title_pk')
             if Review.objects.filter(title_id=title_id, author=request.user).exists():
                 raise ValidationError('Вы уже оставляли отзыв к этому произведению.')
+            
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -37,6 +40,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     Автор подставляется автоматически в ReviewViewSet.
     """
+
     author = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault())
 
@@ -89,7 +93,7 @@ class TitleCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('name', 'year', 'description', 'genre', 'category')
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
 
     def validate_year(self, proposed_year):
         current_year = datetime.date.today().year
