@@ -32,3 +32,19 @@ class SignUpSerializer(serializers.ModelSerializer):
                 'Недопустимо использование "me" в качестве имени пользователя'
             )
         return username
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')
+
+    def validate_role(self, role):
+        user = self.context['request'].user
+        if not (user.is_staff or user.role == 'admin'):
+            raise serializers.ValidationError(
+                'Вы не можете изменить свою роль.'
+            )
+        return role
