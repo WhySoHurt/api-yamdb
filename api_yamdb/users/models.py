@@ -6,11 +6,10 @@ from .constants import ROLE_CHOICES, USER, ADMIN, MODERATOR
 
 class MyUser(AbstractUser):
     username = models.CharField(
-        'Имя пользователя',
         unique=True,
         max_length=150
     )
-    email = models.EmailField('Электронная почта', unique=True, max_length=254)
+    email = models.EmailField(unique=True, max_length=254)
     first_name = models.CharField('Имя', max_length=150, blank=True)
     last_name = models.CharField(
         'Фамилия',
@@ -30,6 +29,7 @@ class MyUser(AbstractUser):
 
     class Meta:
         ordering = ('id',)
+        verbose_name = 'User'
 
     def __str__(self):
         return self.username
