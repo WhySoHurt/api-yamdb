@@ -1,7 +1,17 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
 
 from .models import MyUser
 
+admin.site.empty_value_display = 'Не задано'
 
-admin.site.register(MyUser, UserAdmin)
+
+@admin.register(MyUser)
+class MyUserAdmin(admin.ModelAdmin):
+    list_display = (
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'bio',
+        'role'
+    )
