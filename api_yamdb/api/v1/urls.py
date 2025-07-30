@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from users.views import SignUpView, TokenView
 from api.views import CategoryViewSet, GenreViewSet, TitleViewSet
+from users.views import UserViewSet
 
 
 v1_router = DefaultRouter()
