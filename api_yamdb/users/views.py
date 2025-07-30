@@ -2,11 +2,14 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
-from rest_framework import status
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from users.serializers import SignUpSerializer, TokenSerializer
+from .pagination import UserPagination
+from .permissions import IsAdmin
+from .serializers import SignUpSerializer, TokenSerializer, UserSerializer
 
 User = get_user_model()
 
@@ -40,3 +43,35 @@ class SignUpView(APIView):
             {'email': email, 'username': username},
             status=status.HTTP_200_OK
         )
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAdmin,)
+    lookup_field = 'username'
+    pagination_class = UserPagination
+
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='me'
+    )
+    def me(self, request):
+        user = request.user
+        if request.method == 'GET':
+            serializer = self.get_serializer(user)
+            return Response(serializer.data)
+        if request.method == 'PATCH':
+            if 'role' in request.data:
+                return Response(
+                    {'role': 'Данное поле недоступно для редактирования'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            serializer = self.get_serializer(
+                user, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
