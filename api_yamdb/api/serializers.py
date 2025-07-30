@@ -1,3 +1,5 @@
+import datetime
+
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -95,3 +97,12 @@ class TitleCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = ('name', 'year', 'description', 'genre', 'category')
+
+    def validate_year(self, value):
+        current_year = datetime.date.today().year
+        if value > current_year:
+            raise ValidationError(
+                f'Год выпуска не может быть больше текущего ({current_year}). '
+                'Нельзя добавлять произведения из будущего.'
+            )
+        return value
