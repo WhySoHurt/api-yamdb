@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -13,12 +14,10 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault())
 
-
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         read_only_fields = ('author',)
         model = Review
-    
 
     def validate(self, data):
         """
@@ -44,3 +43,55 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = ('author',)
         model = Comment
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ('name', 'slug')
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genre
+        fields = ('name', 'slug')
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    """Для вывода информации о произведении."""
+
+    rating = serializers.IntegerField(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category')
+        read_only_fields = ('id',)
+
+    def get_rating(self, obj):
+        avg_score = obj.reviews.aggregate(avg=Avg('score'))['avg']
+        if avg_score is not None:
+            return round(avg_score)
+        return None
+
+
+class TitleCreateSerializer(serializers.ModelSerializer):
+    """Для создания/обновления произведения."""
+
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Genre.objects.all(),
+        many=True
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+
+    class Meta:
+        model = Title
+        fields = ('name', 'year', 'description', 'genre', 'category')

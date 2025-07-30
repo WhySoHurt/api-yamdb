@@ -58,7 +58,7 @@ class Review(models.Model):
         verbose_name = 'отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
-        ordering = ('-pub_date')
+        ordering = ('-pub_date',)
         constraints = [
             models.UniqueConstraint(
                 fields=['title', 'author'], name='unique_review')
@@ -78,7 +78,7 @@ class Comment(models.Model):
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'
-        ordering = ('-pub_date')
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return f"{self.author.username} - {self.review}"
