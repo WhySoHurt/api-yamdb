@@ -50,6 +50,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
     """Вьюсет для запросов к отзывам."""
+
     serializer_class = ReviewSerializer
     pagination_class = ReviewCommentPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -67,15 +68,18 @@ class ReviewViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
 
 class CommentViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
     """Вьюсет для запросов к комментариям."""
+
     serializer_class = CommentSerializer
     pagination_class = ReviewCommentPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
         """Получает комментарий по id произведения из kwarg-аргумента."""
+
         return Comment.objects.filter(review_id=self.kwargs['review_pk'])
 
     def perform_create(self, serializer):
         """Сохраняет автора и проверяет, что отзыв существует."""
+        
         review = get_object_or_404(Review, pk=self.kwargs['review_pk'])
         serializer.save(author=self.request.user, review=review)
