@@ -1,6 +1,5 @@
 import datetime
 
-from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -74,12 +73,6 @@ class TitleSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category')
         read_only_fields = ('id',)
 
-    def get_rating(self, obj):
-        avg_score = obj.reviews.aggregate(avg=Avg('score'))['avg']
-        if avg_score is not None:
-            return round(avg_score)
-        return None
-
 
 class TitleCreateSerializer(serializers.ModelSerializer):
     """Для создания/обновления произведения."""
@@ -98,11 +91,11 @@ class TitleCreateSerializer(serializers.ModelSerializer):
         model = Title
         fields = ('name', 'year', 'description', 'genre', 'category')
 
-    def validate_year(self, value):
+    def validate_year(self, proposed_year):
         current_year = datetime.date.today().year
-        if value > current_year:
+        if proposed_year > current_year:
             raise ValidationError(
                 f'Год выпуска не может быть больше текущего ({current_year}). '
                 'Нельзя добавлять произведения из будущего.'
             )
-        return value
+        return proposed_year
