@@ -80,14 +80,17 @@ class ReviewViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
     pagination_class = ReviewCommentPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_queryset(self):
-        """Получает произведение по id из kwarg-аргумента."""
-        return Review.objects.filter(title_id=self.kwargs['title_pk'])
+    def get_title(self):
+        """Возвращает произведение по pk, указанному в URL."""
+        return get_object_or_404(Title, pk=self.kwargs['title_pk'])
 
+    def get_queryset(self):
+        """Возвращает отзыв к произведению."""
+        return Review.objects.filter(title=self.get_title())
+   
     def perform_create(self, serializer):
-        """Сохраняет автора и проверяет, что произведение существует."""
-        title = get_object_or_404(Title, pk=self.kwargs['title_pk'])
-        serializer.save(author=self.request.user, title=title)
+        """Сохраняет отзыв, подставляя автора и произведение."""
+        serializer.save(author=self.request.user, title=self.get_title())
 
 
 class CommentViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
@@ -97,13 +100,14 @@ class CommentViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
     pagination_class = ReviewCommentPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_queryset(self):
-        """Получает комментарий по id произведения из kwarg-аргумента."""
+    def get_review(self):
+        """Возвращает отзыв по pk, указанному в URL."""
+        return get_object_or_404(Review, pk=self.kwargs['review_pk'])
 
-        return Comment.objects.filter(review_id=self.kwargs['review_pk'])
+    def get_queryset(self):
+        """Возвращает комментарий к отзыву."""
+        return Comment.objects.filter(review=self.get_review())
 
     def perform_create(self, serializer):
-        """Сохраняет автора и проверяет, что отзыв существует."""
-
-        review = get_object_or_404(Review, pk=self.kwargs['review_pk'])
-        serializer.save(author=self.request.user, review=review)
+        """Сохраняет комментарий, подставляя автора и отзыв."""
+        serializer.save(author=self.request.user, review=self.get_review())
