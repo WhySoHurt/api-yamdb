@@ -4,7 +4,7 @@ from rest_framework_nested import routers
 
 from users.views import SignUpView, TokenView
 from api.views import (
-    CategoryViewSet, GenreViewSet, TitleViewSet, 
+    CategoryViewSet, GenreViewSet, TitleViewSet,
     ReviewViewSet, CommentViewSet)
 from users.views import UserViewSet
 
