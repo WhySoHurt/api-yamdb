@@ -14,7 +14,7 @@ class Command(BaseCommand):
     Кастомная команда Django для загрузки данных из CSV-файлов в базу данных.
 
     Пример использования:
-        python manage.py load_data --path data
+        python manage.py load_data --path api_yamdb/static/data
 
     Ожидается, что в указанной папке находятся следующие файлы:
         - category.csv
