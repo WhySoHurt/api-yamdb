@@ -31,7 +31,8 @@ class SignUpView(APIView):
         if user:
             if user.email != email:
                 return Response(
-                    {'email': 'Email не соответствует существующему пользователю'},
+                    {'email':
+                     'Email не соответствует существующему пользователю'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             user.confirmation_code = get_random_string(length=20)
