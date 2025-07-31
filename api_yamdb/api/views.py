@@ -1,19 +1,19 @@
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
 from reviews.models import (
     Category, Genre, Title, Review, Comment)
 from .filters import TitleFilter
+from .pagination import ReviewCommentPagination
 from .permissions import IsAdminOrReadOnly
 from .serializers import (
     CategorySerializer, GenreSerializer, TitleSerializer,
     TitleCreateSerializer, ReviewSerializer, CommentSerializer
 )
-from .pagination import ReviewCommentPagination
 from .mixins import ReviewCommentPermissionMixin
 
 
@@ -87,7 +87,7 @@ class ReviewViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         """Возвращает отзыв к произведению."""
         return Review.objects.filter(title=self.get_title())
-   
+
     def perform_create(self, serializer):
         """Сохраняет отзыв, подставляя автора и произведение."""
         serializer.save(author=self.request.user, title=self.get_title())

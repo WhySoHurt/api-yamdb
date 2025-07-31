@@ -1,8 +1,6 @@
 from rest_framework.pagination import PageNumberPagination
 
 
-# тоже можно переименовать в Default и переиспользовать, 
-# если нужно.
 class ReviewCommentPagination(PageNumberPagination):
     """Пагинация для отзывов и комментариев."""
 

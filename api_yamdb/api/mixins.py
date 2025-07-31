@@ -10,8 +10,7 @@ class ReviewCommentPermissionMixin:
     """
 
     def get_permissions(self):
-        """Устаначвливает класс доступа в зависимости от метода запроса."""
-        
+        """Устанавливает класс доступа в зависимости от метода запроса."""
         if self.action in ['list', 'retrieve']:
             permission_classes = [AllowAny]
         elif self.action in ['partial_update', 'update', 'destroy']:
