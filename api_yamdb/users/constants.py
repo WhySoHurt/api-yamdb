@@ -6,3 +6,4 @@ ROLE_CHOICES = [
     (MODERATOR, 'Модератор'),
     (ADMIN, 'Администратор')
 ]
+USERNAME_PATTERN = r'^[\w.@+-]+\Z'
