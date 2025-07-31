@@ -113,7 +113,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         if User.objects.filter(email=email).exists():
             return Response(
                 {'email': 'Email уже используется другим пользователем.'},
