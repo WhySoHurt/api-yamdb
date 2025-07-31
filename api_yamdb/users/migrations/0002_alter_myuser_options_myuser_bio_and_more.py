@@ -1,0 +1,50 @@
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('users', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.AlterModelOptions(
+            name='myuser',
+            options={'ordering': ('id',)},
+        ),
+        migrations.AddField(
+            model_name='myuser',
+            name='bio',
+            field=models.TextField(blank=True, verbose_name='Биография'),
+        ),
+        migrations.AddField(
+            model_name='myuser',
+            name='confirmation_code',
+            field=models.CharField(blank=True, max_length=128),
+        ),
+        migrations.AddField(
+            model_name='myuser',
+            name='role',
+            field=models.CharField(choices=[('user', 'Пользователь'), ('moderator', 'Модератор'), ('admin', 'Администратор')], default='user', max_length=20, verbose_name='Права доступа'),
+        ),
+        migrations.AlterField(
+            model_name='myuser',
+            name='email',
+            field=models.EmailField(max_length=254, unique=True, verbose_name='Электронная почта'),
+        ),
+        migrations.AlterField(
+            model_name='myuser',
+            name='first_name',
+            field=models.CharField(blank=True, max_length=150, verbose_name='Имя'),
+        ),
+        migrations.AlterField(
+            model_name='myuser',
+            name='last_name',
+            field=models.CharField(blank=True, max_length=150, verbose_name='Фамилия'),
+        ),
+        migrations.AlterField(
+            model_name='myuser',
+            name='username',
+            field=models.CharField(max_length=150, unique=True, verbose_name='Имя пользователя'),
+        ),
+    ]
