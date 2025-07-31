@@ -12,7 +12,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     Автор подставляется автоматически в ReviewViewSet.
     """
-    
+
     author = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault())
 
@@ -30,7 +30,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             title_id = self.context['view'].kwargs.get('title_pk')
             if Review.objects.filter(title_id=title_id, author=request.user).exists():
                 raise ValidationError('Вы уже оставляли отзыв к этому произведению.')
-            
+
         return data
 
 
@@ -74,8 +74,8 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category')
-        read_only_fields = ('id',)
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
 
 
 class TitleCreateSerializer(serializers.ModelSerializer):
@@ -84,11 +84,13 @@ class TitleCreateSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
-        many=True
+        many=True,
+        required=False
     )
     category = serializers.SlugRelatedField(
         slug_field='slug',
-        queryset=Category.objects.all()
+        queryset=Category.objects.all(),
+        required=False
     )
 
     class Meta:
