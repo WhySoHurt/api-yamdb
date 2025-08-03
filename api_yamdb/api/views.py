@@ -9,7 +9,6 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from reviews.models import (
     Category, Genre, Title, Review, Comment)
 from .filters import TitleFilter
-from .pagination import ReviewCommentPagination
 from .permissions import IsAdminOrReadOnly, IsAuthorOrModeratorOrAdmin
 from .serializers import (
     CategorySerializer, GenreSerializer, TitleSerializer,
@@ -18,7 +17,6 @@ from .serializers import (
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    pagination_class = ReviewCommentPagination
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
     lookup_field = 'slug'
@@ -38,7 +36,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 class GenreViewSet(viewsets.ModelViewSet):
-    pagination_class = ReviewCommentPagination
     queryset = Genre.objects.all().order_by('name')
     serializer_class = GenreSerializer
     lookup_field = 'slug'
@@ -58,7 +55,6 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    pagination_class = ReviewCommentPagination
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
     ).order_by('id')
@@ -77,7 +73,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для запросов к отзывам."""
 
     serializer_class = ReviewSerializer
-    pagination_class = ReviewCommentPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [
         IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdmin]
@@ -99,7 +94,6 @@ class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для запросов к комментариям."""
 
     serializer_class = CommentSerializer
-    pagination_class = ReviewCommentPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [
         IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdmin]
