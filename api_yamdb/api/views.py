@@ -46,7 +46,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = ReviewCommentPagination
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    ).order_by('id')
+    )
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
     permission_classes = [IsAdminOrReadOnly]
