@@ -57,6 +57,11 @@ class TitleViewSet(viewsets.ModelViewSet):
             return TitleReadSerializer
         return TitleWriteSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        ordering = self.queryset.model._meta.ordering
+        return queryset.order_by(*ordering)
+
 
 class ReviewViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
     """Вьюсет для запросов к отзывам."""
