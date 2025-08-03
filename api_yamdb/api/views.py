@@ -1,60 +1,45 @@
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
-from rest_framework.response import Response
-
+from rest_framework.mixins import (
+    ListModelMixin, CreateModelMixin, DestroyModelMixin
+)
 from reviews.models import (
     Category, Genre, Title, Review, Comment)
 from .filters import TitleFilter
 from .pagination import ReviewCommentPagination
 from .permissions import IsAdminOrReadOnly
 from .serializers import (
-    CategorySerializer, GenreSerializer, TitleSerializer,
-    TitleCreateSerializer, ReviewSerializer, CommentSerializer
+    CategorySerializer, GenreSerializer, TitleReadSerializer,
+    TitleWriteSerializer, ReviewSerializer, CommentSerializer
 )
 from .mixins import ReviewCommentPermissionMixin
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class BaseCategoryGenreViewSet(
+    CreateModelMixin, ListModelMixin, DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    """Базовый вьюсет для категорий и жанров."""
+
     pagination_class = ReviewCommentPagination
-    queryset = Category.objects.all().order_by('name')
+    lookup_field = 'slug'
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['name']
+    search_fields = ['name']
+    permission_classes = [IsAdminOrReadOnly]
+
+
+class CategoryViewSet(BaseCategoryGenreViewSet):
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    lookup_field = 'slug'
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['name']
-    search_fields = ['name']
-    permission_classes = [IsAdminOrReadOnly]
-
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def partial_update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-class GenreViewSet(viewsets.ModelViewSet):
-    pagination_class = ReviewCommentPagination
-    queryset = Genre.objects.all().order_by('name')
+class GenreViewSet(BaseCategoryGenreViewSet):
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    lookup_field = 'slug'
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['name']
-    search_fields = ['name']
-    permission_classes = [IsAdminOrReadOnly]
-
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def partial_update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -69,8 +54,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
-            return TitleSerializer
-        return TitleCreateSerializer
+            return TitleReadSerializer
+        return TitleWriteSerializer
 
 
 class ReviewViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):

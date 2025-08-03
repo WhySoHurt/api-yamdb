@@ -1,10 +1,17 @@
+import datetime
+
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from .constants import CHOICES_SCORE, SLUG_MAX_LENGTH, CHAR_MAX_LENGTH
 
 
 User = get_user_model()
+
+
+def current_year():
+    return datetime.date.today().year
 
 
 class Category(models.Model):
@@ -15,6 +22,7 @@ class Category(models.Model):
         return self.name
 
     class Meta:
+        ordering = ['name']
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
 
@@ -27,13 +35,19 @@ class Genre(models.Model):
         return self.name
 
     class Meta:
+        ordering = ['name']
         verbose_name = 'жанр'
         verbose_name_plural = 'Жанры'
 
 
 class Title(models.Model):
     name = models.CharField(max_length=CHAR_MAX_LENGTH)
-    year = models.IntegerField()
+    year = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(current_year)
+        ]
+    )
     description = models.TextField(blank=True)
     genre = models.ManyToManyField(Genre, related_name='titles')
     category = models.ForeignKey(
@@ -43,6 +57,7 @@ class Title(models.Model):
         return self.name
 
     class Meta:
+        ordering = ['-year', 'name']
         verbose_name = 'произведение'
         verbose_name_plural = 'Произведения'
 
