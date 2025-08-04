@@ -83,7 +83,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Возвращает отзыв к произведению."""
-        return Review.objects.filter(title=self.get_title())
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
         """Сохраняет отзыв, подставляя автора и произведение."""
@@ -104,7 +104,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Возвращает комментарий к отзыву."""
-        return Comment.objects.filter(review=self.get_review())
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         """Сохраняет комментарий, подставляя автора и отзыв."""

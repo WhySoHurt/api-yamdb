@@ -13,12 +13,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     Автор подставляется автоматически в ReviewViewSet.
     """
 
-    author = serializers.StringRelatedField(
-        read_only=True, default=serializers.CurrentUserDefault())
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        default=serializers.CurrentUserDefault(),
+        slug_field='username')
 
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
-        read_only_fields = ('author',)
         model = Review
 
     def validate(self, data):
@@ -26,14 +27,17 @@ class ReviewSerializer(serializers.ModelSerializer):
         Проверяет, что пользователь ещё не оставлял отзыв к произведению.
         """
         request = self.context['request']
-        if request.method == 'POST':
-            title_id = self.context['view'].kwargs.get('title_pk')
-            if Review.objects.filter(
-                title_id=title_id,
-                author=request.user
-            ).exists():
-                raise ValidationError(
-                    'Вы уже оставляли отзыв к этому произведению.')
+        if request.method != 'POST':
+            return data
+
+        title_id = self.context['view'].kwargs.get('title_pk')
+
+        if Review.objects.filter(
+            title_id=title_id,
+            author=request.user
+        ).exists():
+            raise ValidationError(
+                'Отзыв к этому произведению уже существует.')
 
         return data
 
@@ -45,12 +49,13 @@ class CommentSerializer(serializers.ModelSerializer):
     Автор подставляется автоматически в ReviewViewSet.
     """
 
-    author = serializers.StringRelatedField(
-        read_only=True, default=serializers.CurrentUserDefault())
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        default=serializers.CurrentUserDefault(),
+        slug_field='username')
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
-        read_only_fields = ('author',)
         model = Comment
 
 
