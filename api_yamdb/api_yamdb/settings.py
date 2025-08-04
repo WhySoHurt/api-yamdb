@@ -1,6 +1,6 @@
-from pathlib import Path
-from datetime import timedelta
 import os
+from datetime import timedelta
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -10,7 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default_key')
 
+
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+
 
 ALLOWED_HOSTS = ['*']
 
@@ -21,12 +23,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'rest_framework',
     'rest_framework_simplejwt',
     'api.apps.ApiConfig',
-    'users.apps.UsersConfig',
     'reviews.apps.ReviewsConfig',
-    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -38,6 +39,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+AUTH_USER_MODEL = 'reviews.YamdbUser'
 
 ROOT_URLCONF = 'api_yamdb.urls'
 
@@ -66,8 +68,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-AUTH_USER_MODEL = 'users.MyUser'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -103,7 +103,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5
+    'PAGE_SIZE': 5,
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
