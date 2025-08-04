@@ -1,21 +1,22 @@
 import datetime
 
-from django.core.validators import MinValueValidator, MaxValueValidator
-
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+    RegexValidator,
+)
 from django.db import models
 
 from .constants import (
     ADMIN,
-    CHAR_MAX_LENGTH,
     CHOICES_SCORE,
     EMAIL_MAX_LENGTH,
     MODERATOR,
+    NAME_MAX_LENGTH,
     ROLE_CHOICES,
     ROLE_MAX_LENGTH,
-    NAME_MAX_LENGTH,
     SLUG_MAX_LENGTH,
     USER,
     USERNAME_MAX_LENGTH,
@@ -28,7 +29,7 @@ class YamdbUser(AbstractUser):
         unique=True,
         max_length=USERNAME_MAX_LENGTH,
         verbose_name='Имя пользователя',
-        validators=[RegexValidator(regex=USERNAME_PATTERN)]
+        validators=[RegexValidator(regex=USERNAME_PATTERN)],
     )
     email = models.EmailField(unique=True, max_length=EMAIL_MAX_LENGTH)
     first_name = models.CharField('Имя', max_length=150, blank=True)
@@ -72,9 +73,11 @@ class NamedSlugModel(models.Model):
     """
 
     name = models.CharField(
-        max_length=NAME_MAX_LENGTH, verbose_name='Название')
+        max_length=NAME_MAX_LENGTH, verbose_name='Название'
+    )
     slug = models.SlugField(
-        unique=True, max_length=SLUG_MAX_LENGTH, verbose_name='Слаг')
+        unique=True, max_length=SLUG_MAX_LENGTH, verbose_name='Слаг'
+    )
 
     class Meta:
         abstract = True
@@ -85,14 +88,12 @@ class NamedSlugModel(models.Model):
 
 
 class Category(NamedSlugModel):
-
     class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
 
 
 class Genre(NamedSlugModel):
-
     class Meta:
         verbose_name = 'жанр'
         verbose_name_plural = 'Жанры'
@@ -100,27 +101,28 @@ class Genre(NamedSlugModel):
 
 class Title(models.Model):
     name = models.CharField(
-        max_length=NAME_MAX_LENGTH, verbose_name='Название')
+        max_length=NAME_MAX_LENGTH, verbose_name='Название'
+    )
     year = models.IntegerField(
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(current_year)
-        ],
-        verbose_name='Год'
+        validators=[MinValueValidator(1), MaxValueValidator(current_year)],
+        verbose_name='Год',
     )
     description = models.TextField(blank=True, verbose_name='Описание')
     genre = models.ManyToManyField(
-        Genre, related_name='titles', verbose_name='Жанр')
+        Genre, related_name='titles', verbose_name='Жанр'
+    )
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True,
-        related_name='titles', verbose_name='Категория'
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='titles',
+        verbose_name='Категория',
     )
 
     class Meta:
         ordering = ('-year', 'name')
         verbose_name = 'произведение'
         verbose_name_plural = 'Произведения'
-
 
     def __str__(self):
         return self.name
@@ -132,10 +134,14 @@ class ReviewCommentBase(models.Model):
     """
 
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='Автор')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name='Автор',
+    )
     text = models.TextField(verbose_name='Текст отзыва')
     pub_date = models.DateTimeField(
-        auto_now_add=True, verbose_name='Дата публикации')
+        auto_now_add=True, verbose_name='Дата публикации'
+    )
 
     class Meta:
         abstract = True
@@ -144,9 +150,9 @@ class ReviewCommentBase(models.Model):
 
 class Review(ReviewCommentBase):
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, verbose_name='Произведение')
-    score = models.IntegerField(
-        choices=CHOICES_SCORE, verbose_name='Оценка')
+        Title, on_delete=models.CASCADE, verbose_name='Произведение'
+    )
+    score = models.IntegerField(choices=CHOICES_SCORE, verbose_name='Оценка')
 
     class Meta:
         verbose_name = 'отзыв'
@@ -164,8 +170,8 @@ class Review(ReviewCommentBase):
 
 class Comment(ReviewCommentBase):
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, verbose_name='Отзыв')
-
+        Review, on_delete=models.CASCADE, verbose_name='Отзыв'
+    )
 
     class Meta:
         verbose_name = 'комментарий'
