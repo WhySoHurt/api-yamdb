@@ -22,6 +22,12 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.mixins import (
+    ListModelMixin,
+    CreateModelMixin,
+    DestroyModelMixin
+)
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from reviews.constants import (
     CONFIRMATION_CODE_CHARS,
@@ -48,7 +54,9 @@ User = get_user_model()
 
 
 class BaseCategoryGenreViewSet(
-    CreateModelMixin, ListModelMixin, DestroyModelMixin,
+    CreateModelMixin,
+    ListModelMixin,
+    DestroyModelMixin,
     viewsets.GenericViewSet
 ):
     """Базовый вьюсет для категорий и жанров."""

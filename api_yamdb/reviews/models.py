@@ -3,9 +3,9 @@ import datetime
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import (
-    MaxValueValidator,
     MinValueValidator,
-    RegexValidator,
+    MaxValueValidator,
+    RegexValidator
 )
 from django.db import models
 
@@ -116,7 +116,7 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='titles',
-        verbose_name='Категория',
+        verbose_name='Категория'
     )
 
     class Meta:
@@ -136,7 +136,7 @@ class ReviewCommentBase(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        verbose_name='Автор',
+        verbose_name='Автор'
     )
     text = models.TextField(verbose_name='Текст отзыва')
     pub_date = models.DateTimeField(

@@ -1,5 +1,6 @@
 import string
 
+
 MIN_SCORE = 1
 MAX_SCORE = 10
 CHOICES_SCORE = [(i, str(i)) for i in range(MIN_SCORE, MAX_SCORE + 1)]
