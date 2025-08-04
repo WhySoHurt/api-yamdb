@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 
 from django.db import models
 
@@ -15,6 +16,7 @@ from .constants import (
     USERNAME_MAX_LENGTH,
     EMAIL_MAX_LENGTH,
     ROLE_MAX_LENGTH,
+    USERNAME_PATTERN
 )
 
 
@@ -23,6 +25,7 @@ class YamdbUser(AbstractUser):
         unique=True,
         max_length=USERNAME_MAX_LENGTH,
         verbose_name='Имя пользователя',
+        validators=[RegexValidator(regex=USERNAME_PATTERN)]
     )
     email = models.EmailField(unique=True, max_length=EMAIL_MAX_LENGTH)
     first_name = models.CharField('Имя', max_length=150, blank=True)

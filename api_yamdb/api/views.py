@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
@@ -14,7 +15,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
-    IsAuthenticatedOrReadOnly
+    IsAuthenticatedOrReadOnly,
 )
 
 from rest_framework_simplejwt.tokens import AccessToken
@@ -34,7 +35,11 @@ from .serializers import (
     UserSerializer,
 )
 
-from reviews.constants import EDIT_ENDPOINT
+from reviews.constants import (
+    EDIT_ENDPOINT,
+    CONFIRMATION_CODE_LENGTH,
+    CONFIRMATION_CODE_CHARS,
+)
 
 
 User = get_user_model()
@@ -79,9 +84,9 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.annotate(
-        rating=Avg('reviews__score')
-    ).order_by('id')
+    queryset = Title.objects.annotate(rating=Avg('reviews__score')).order_by(
+        'id'
+    )
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
     permission_classes = [IsAdminOrReadOnly]
@@ -99,7 +104,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [
-        IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdmin]
+        IsAuthenticatedOrReadOnly,
+        IsAuthorOrModeratorOrAdmin,
+    ]
 
     def get_title(self):
         """Возвращает произведение по pk, указанному в URL."""
@@ -120,7 +127,9 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = [
-        IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdmin]
+        IsAuthenticatedOrReadOnly,
+        IsAuthorOrModeratorOrAdmin,
+    ]
 
     def get_review(self):
         """Возвращает отзыв по pk, указанному в URL."""
@@ -163,25 +172,37 @@ def signup_view(request):
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data['username']
     email = serializer.validated_data['email']
-    user, created = User.objects.get_or_create(
-        username=username,
-        email=email,
-        defaults={'username': username, 'email': email},
+    confirmation_code = get_random_string(
+        length=CONFIRMATION_CODE_LENGTH,
+        allowed_chars=CONFIRMATION_CODE_CHARS,
     )
-    if username in user.username:
-        if user.email != email:
-            raise ValidationError(
-                {'email': 'Email не соответствует существующему пользователю'},
-            )
-        user.confirmation_code = get_random_string(length=20)
-        user.save()
-        send_mail(
-            'Код подтверждения',
-            f'Ваш код: {user.confirmation_code}',
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=True,
+    try:
+        user, created = User.objects.get_or_create(
+            username=username,
+            email=email,
+            defaults={'confirmation_code': confirmation_code},
         )
+        if not created:
+            user.confirmation_code = confirmation_code
+            user.save()
+
+    except IntegrityError as e:
+        error_msg = str(e)
+        if 'username' in error_msg:
+            raise ValidationError(
+                {'username': 'Пользователь с таким username уже существует.'}
+            )
+        elif 'email' in error_msg:
+            raise ValidationError(
+                {'email': 'Пользователь с таким email уже существует.'}
+            )
+    send_mail(
+        'Код подтверждения',
+        f'Ваш код: {user.confirmation_code}',
+        settings.DEFAULT_FROM_EMAIL,
+        [email],
+        fail_silently=True,
+    )
 
     return Response(
         {'email': email, 'username': username}, status=status.HTTP_200_OK
@@ -189,6 +210,7 @@ def signup_view(request):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
@@ -207,12 +229,8 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             serializer = self.get_serializer(user)
             return Response(serializer.data)
-        serializer = self.get_serializer(
-            user, data=request.data, partial=True
-        )
+        serializer = self.get_serializer(user, data=request.data, partial=True)
 
         serializer.is_valid(raise_exception=True)
-        if not user.is_admin:
-            serializer.save(role=user.role)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)

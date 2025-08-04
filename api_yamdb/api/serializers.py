@@ -155,3 +155,9 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        if not (request and (request.user.is_admin or request.user.is_staff)):
+            validated_data['role'] = instance.role
+        return super().update(instance, validated_data)
