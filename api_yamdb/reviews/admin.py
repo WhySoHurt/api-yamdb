@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-from .models import MyUser
+from .models import YamdbUser
 
 admin.site.empty_value_display = 'Не задано'
 
 
-@admin.register(MyUser)
-class MyUserAdmin(admin.ModelAdmin):
+@admin.register(YamdbUser)
+class YamdbUserAdmin(admin.ModelAdmin):
     list_display = (
         'username',
         'email',

@@ -1,9 +1,19 @@
 import datetime
 
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.constants import (
+    EMAIL_MAX_LENGTH,
+    USERNAME_MAX_LENGTH,
+    USERNAME_PATTERN,
+)
+from reviews.models import Category, Comment, Genre, Review, Title
+
+from .validators import username_validator
+
+User = get_user_model()
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -60,20 +70,18 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Category
         fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Genre
         fields = ('name', 'slug')
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     """Для вывода информации о произведении."""
 
     rating = serializers.IntegerField(read_only=True)
@@ -83,34 +91,67 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category',
         )
+        read_only_fields = fields
 
 
-class TitleCreateSerializer(serializers.ModelSerializer):
+class TitleWriteSerializer(serializers.ModelSerializer):
     """Для создания/обновления произведения."""
 
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
         many=True,
-        required=False
+        required=False,
     )
     category = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all(),
-        required=False
+        slug_field='slug', queryset=Category.objects.all(), required=False
     )
 
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'description', 'genre', 'category')
 
-    def validate_year(self, proposed_year):
-        current_year = datetime.date.today().year
-        if proposed_year > current_year:
-            raise ValidationError(
-                f'Год выпуска не может быть больше текущего ({current_year}). '
-                'Нельзя добавлять произведения из будущего.'
-            )
-        return proposed_year
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.RegexField(
+        required=True,
+        regex=USERNAME_PATTERN,
+        max_length=USERNAME_MAX_LENGTH,
+    )
+    confirmation_code = serializers.CharField(required=True)
+
+
+class SignUpSerializer(serializers.Serializer):
+    username = serializers.RegexField(
+        regex=USERNAME_PATTERN,
+        max_length=USERNAME_MAX_LENGTH,
+        validators=[username_validator],
+    )
+    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        if not (request and (request.user.is_admin or request.user.is_staff)):
+            validated_data['role'] = instance.role
+        return super().update(instance, validated_data)
