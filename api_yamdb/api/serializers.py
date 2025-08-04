@@ -1,9 +1,19 @@
 import datetime
 
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.constants import (
+    EMAIL_MAX_LENGTH,
+    USERNAME_MAX_LENGTH,
+    USERNAME_PATTERN,
+)
+from reviews.models import Category, Comment, Genre, Review, Title
+
+from .validators import username_validator
+
+User = get_user_model()
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -14,7 +24,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     """
 
     author = serializers.StringRelatedField(
-        read_only=True, default=serializers.CurrentUserDefault())
+        read_only=True, default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
@@ -29,11 +40,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         if request.method == 'POST':
             title_id = self.context['view'].kwargs.get('title_pk')
             if Review.objects.filter(
-                title_id=title_id,
-                author=request.user
+                title_id=title_id, author=request.user
             ).exists():
                 raise ValidationError(
-                    'Вы уже оставляли отзыв к этому произведению.')
+                    'Вы уже оставляли отзыв к этому произведению.'
+                )
 
         return data
 
@@ -46,7 +57,8 @@ class CommentSerializer(serializers.ModelSerializer):
     """
 
     author = serializers.StringRelatedField(
-        read_only=True, default=serializers.CurrentUserDefault())
+        read_only=True, default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
@@ -55,14 +67,12 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Category
         fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Genre
         fields = ('name', 'slug')
@@ -78,7 +88,13 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category',
         )
 
 
@@ -89,12 +105,10 @@ class TitleCreateSerializer(serializers.ModelSerializer):
         slug_field='slug',
         queryset=Genre.objects.all(),
         many=True,
-        required=False
+        required=False,
     )
     category = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all(),
-        required=False
+        slug_field='slug', queryset=Category.objects.all(), required=False
     )
 
     class Meta:
@@ -109,3 +123,40 @@ class TitleCreateSerializer(serializers.ModelSerializer):
                 'Нельзя добавлять произведения из будущего.'
             )
         return proposed_year
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.RegexField(
+        required=True,
+        regex=USERNAME_PATTERN,
+        max_length=USERNAME_MAX_LENGTH,
+    )
+    confirmation_code = serializers.CharField(required=True)
+
+
+class SignUpSerializer(serializers.Serializer):
+    username = serializers.RegexField(
+        regex=USERNAME_PATTERN,
+        max_length=USERNAME_MAX_LENGTH,
+        validators=[username_validator],
+    )
+    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        if not (request and (request.user.is_admin or request.user.is_staff)):
+            validated_data['role'] = instance.role
+        return super().update(instance, validated_data)
