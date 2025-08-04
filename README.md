@@ -33,10 +33,12 @@ cd api-yamdb
 ### 2. Создание виртуального окружения
 
 ```python
+# Если у вас MacOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+# Если у вас Windows
 python -m venv venv
-source venv/bin/activate  # Linux/macOS
-# или
-venv\Scripts\activate     # Windows
+venv/Scripts/activate
 ```
 
 ### 3. Установка зависимостей
@@ -47,7 +49,7 @@ pip install -r requirements.txt
 
 ### 4. Настройка переменных окружения
 
-Создайте файл .env в корне проекта:
+Создайте файл `.env` в корне проекта:
 
 ```
 SECRET_KEY=ваш_секретный_ключ
@@ -57,12 +59,18 @@ DEBUG=False
 ### 5. Применение миграций
 
 ```python
+# Если у вас MacOS/Linux
+python3 manage.py migrate
+# Если у вас Windows
 python manage.py migrate
 ```
 
 ### 6. Импорт данных из CSV-фикстур
 
 ```python
+# Если у вас MacOS/Linux
+python3 manage.py load_data --path static/data
+# Если у вас Windows
 python manage.py load_data --path static/data
 ```
 
@@ -78,6 +86,9 @@ python manage.py load_data --path static/data
 ### 7. Запуск сервера
 
 ```python
+# Если у вас MacOS/Linux
+python3 manage.py runserver
+# Если у вас Windows
 python manage.py runserver
 ```
 
