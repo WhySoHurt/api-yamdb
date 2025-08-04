@@ -8,6 +8,8 @@ import reviews.models
 from django.conf import settings
 from django.db import migrations, models
 
+from reviews.models import current_year
+
 
 class Migration(migrations.Migration):
 
@@ -106,7 +108,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=256, verbose_name='Название')),
-                ('year', models.IntegerField(validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(reviews.models.current_year)], verbose_name='Год')),
+                ('year', models.IntegerField(validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(current_year)], verbose_name='Год')),
                 ('description', models.TextField(blank=True, verbose_name='Описание')),
                 ('category', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='titles', to='reviews.category', verbose_name='Категория')),
                 ('genre', models.ManyToManyField(related_name='titles', to='reviews.genre', verbose_name='Жанр')),

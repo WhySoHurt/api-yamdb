@@ -11,7 +11,9 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
-    ListModelMixin, CreateModelMixin, DestroyModelMixin
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
 )
 from rest_framework.permissions import (
     AllowAny,
@@ -32,7 +34,7 @@ from reviews.constants import (
     CONFIRMATION_CODE_LENGTH,
     EDIT_ENDPOINT,
 )
-from reviews.models import Category, Comment, Genre, Review, Title
+from reviews.models import Category, Genre, Review, Title
 
 from .filters import TitleFilter
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrModeratorOrAdmin
