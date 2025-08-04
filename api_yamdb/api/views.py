@@ -18,7 +18,9 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.mixins import (
-    ListModelMixin, CreateModelMixin, DestroyModelMixin
+    ListModelMixin,
+    CreateModelMixin,
+    DestroyModelMixin
 )
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
@@ -37,8 +39,8 @@ from .serializers import (
     GenreSerializer,
     ReviewSerializer,
     SignUpSerializer,
-    TitleCreateSerializer,
-    TitleSerializer,
+    TitleReadSerializer,
+    TitleWriteSerializer,
     TokenSerializer,
     UserSerializer,
 )
@@ -47,7 +49,9 @@ User = get_user_model()
 
 
 class BaseCategoryGenreViewSet(
-    CreateModelMixin, ListModelMixin, DestroyModelMixin,
+    CreateModelMixin,
+    ListModelMixin,
+    DestroyModelMixin,
     viewsets.GenericViewSet
 ):
     """Базовый вьюсет для категорий и жанров."""

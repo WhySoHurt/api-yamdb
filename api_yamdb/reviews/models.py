@@ -70,9 +70,11 @@ class NamedSlugModel(models.Model):
     """
 
     name = models.CharField(
-        max_length=NAME_MAX_LENGTH, verbose_name='Название')
+        max_length=NAME_MAX_LENGTH, verbose_name='Название'
+    )
     slug = models.SlugField(
-        unique=True, max_length=SLUG_MAX_LENGTH, verbose_name='Слаг')
+        unique=True, max_length=SLUG_MAX_LENGTH, verbose_name='Слаг'
+    )
 
     class Meta:
         abstract = True
@@ -98,7 +100,8 @@ class Genre(NamedSlugModel):
 
 class Title(models.Model):
     name = models.CharField(
-        max_length=NAME_MAX_LENGTH, verbose_name='Название')
+        max_length=NAME_MAX_LENGTH, verbose_name='Название'
+    )
     year = models.IntegerField(
         validators=[
             MinValueValidator(1),
@@ -108,10 +111,14 @@ class Title(models.Model):
     )
     description = models.TextField(blank=True, verbose_name='Описание')
     genre = models.ManyToManyField(
-        Genre, related_name='titles', verbose_name='Жанр')
+        Genre, related_name='titles', verbose_name='Жанр'
+    )
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True,
-        related_name='titles', verbose_name='Категория'
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='titles',
+        verbose_name='Категория'
     )
 
     class Meta:
@@ -129,10 +136,14 @@ class ReviewCommentBase(models.Model):
     """
 
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='Автор')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
+    )
     text = models.TextField(verbose_name='Текст отзыва')
     pub_date = models.DateTimeField(
-        auto_now_add=True, verbose_name='Дата публикации')
+        auto_now_add=True, verbose_name='Дата публикации'
+    )
 
     class Meta:
         abstract = True
