@@ -1,8 +1,10 @@
 import string
 
-CHOICES_SCORE = [(i, str(i)) for i in range(1, 11)]
+MIN_SCORE = 1
+MAX_SCORE = 10
+CHOICES_SCORE = [(i, str(i)) for i in range(MIN_SCORE, MAX_SCORE + 1)]
 SLUG_MAX_LENGTH = 50
-CHAR_MAX_LENGTH = 256
+NAME_MAX_LENGTH = 256
 USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'

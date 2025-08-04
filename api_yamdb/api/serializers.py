@@ -78,7 +78,7 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     """Для вывода информации о произведении."""
 
     rating = serializers.IntegerField(read_only=True)
@@ -96,9 +96,10 @@ class TitleSerializer(serializers.ModelSerializer):
             'genre',
             'category',
         )
+        read_only_fields = fields
 
 
-class TitleCreateSerializer(serializers.ModelSerializer):
+class TitleWriteSerializer(serializers.ModelSerializer):
     """Для создания/обновления произведения."""
 
     genre = serializers.SlugRelatedField(
@@ -114,15 +115,6 @@ class TitleCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'description', 'genre', 'category')
-
-    def validate_year(self, proposed_year):
-        current_year = datetime.date.today().year
-        if proposed_year > current_year:
-            raise ValidationError(
-                f'Год выпуска не может быть больше текущего ({current_year}). '
-                'Нельзя добавлять произведения из будущего.'
-            )
-        return proposed_year
 
 
 class TokenSerializer(serializers.Serializer):
