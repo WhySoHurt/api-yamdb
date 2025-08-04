@@ -10,15 +10,18 @@ from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly
+)
 
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Title, Review, Comment
 from .filters import TitleFilter
-from .pagination import ReviewCommentPagination
-from .permissions import IsAdminOrReadOnly, IsAdmin
+from .permissions import IsAdminOrReadOnly, IsAdmin, IsAuthorOrModeratorOrAdmin
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -30,6 +33,7 @@ from .serializers import (
     TokenSerializer,
     UserSerializer,
 )
+
 from reviews.constants import EDIT_ENDPOINT
 
 
@@ -37,7 +41,6 @@ User = get_user_model()
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    pagination_class = ReviewCommentPagination
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
     lookup_field = 'slug'
@@ -57,7 +60,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 class GenreViewSet(viewsets.ModelViewSet):
-    pagination_class = ReviewCommentPagination
     queryset = Genre.objects.all().order_by('name')
     serializer_class = GenreSerializer
     lookup_field = 'slug'
@@ -77,10 +79,9 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    pagination_class = ReviewCommentPagination
-    queryset = Title.objects.annotate(rating=Avg('reviews__score')).order_by(
-        'id'
-    )
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).order_by('id')
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
     permission_classes = [IsAdminOrReadOnly]
@@ -96,8 +97,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для запросов к отзывам."""
 
     serializer_class = ReviewSerializer
-    pagination_class = ReviewCommentPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = [
+        IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdmin]
 
     def get_title(self):
         """Возвращает произведение по pk, указанному в URL."""
@@ -116,8 +118,9 @@ class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для запросов к комментариям."""
 
     serializer_class = CommentSerializer
-    pagination_class = ReviewCommentPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = [
+        IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdmin]
 
     def get_review(self):
         """Возвращает отзыв по pk, указанному в URL."""
@@ -191,7 +194,6 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdmin,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
-    pagination_class = LimitOffsetPagination
     lookup_field = 'username'
 
     @action(
