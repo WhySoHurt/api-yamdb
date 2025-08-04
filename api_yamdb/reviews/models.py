@@ -1,10 +1,58 @@
-from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+
 from django.db import models
 
-from .constants import CHOICES_SCORE, SLUG_MAX_LENGTH, CHAR_MAX_LENGTH
+
+from .constants import (
+    CHOICES_SCORE,
+    SLUG_MAX_LENGTH,
+    CHAR_MAX_LENGTH,
+    ROLE_CHOICES,
+    USER,
+    ADMIN,
+    MODERATOR,
+    USERNAME_MAX_LENGTH,
+    EMAIL_MAX_LENGTH,
+    ROLE_MAX_LENGTH,
+)
 
 
-User = get_user_model()
+class YamdbUser(AbstractUser):
+    username = models.CharField(
+        unique=True,
+        max_length=USERNAME_MAX_LENGTH,
+        verbose_name='Имя пользователя',
+    )
+    email = models.EmailField(unique=True, max_length=EMAIL_MAX_LENGTH)
+    first_name = models.CharField('Имя', max_length=150, blank=True)
+    last_name = models.CharField('Фамилия', max_length=150, blank=True)
+    bio = models.TextField('Биография', blank=True)
+    role = models.CharField(
+        'Права доступа',
+        max_length=ROLE_MAX_LENGTH,
+        choices=ROLE_CHOICES,
+        default=USER,
+    )
+    confirmation_code = models.CharField(max_length=128, blank=True)
+
+    REQUIRED_FIELDS = ('email',)
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return self.username
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN or self.is_superuser or self.is_staff
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
 
 
 class Category(models.Model):
@@ -37,7 +85,8 @@ class Title(models.Model):
     description = models.TextField(blank=True)
     genre = models.ManyToManyField(Genre, related_name='titles')
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True, related_name='titles')
+        Category, on_delete=models.SET_NULL, null=True, related_name='titles'
+    )
 
     def __str__(self):
         return self.name
@@ -49,7 +98,9 @@ class Title(models.Model):
 
 class Review(models.Model):
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
     text = models.TextField()
     score = models.IntegerField(choices=CHOICES_SCORE)
     pub_date = models.DateTimeField(auto_now_add=True)
@@ -61,16 +112,19 @@ class Review(models.Model):
         ordering = ('-pub_date',)
         constraints = [
             models.UniqueConstraint(
-                fields=['title', 'author'], name='unique_review')
+                fields=['title', 'author'], name='unique_review'
+            )
         ]
 
     def __str__(self):
-        return f"{self.author.username} - {self.title.name}"
+        return f'{self.author.username} - {self.title.name}'
 
 
 class Comment(models.Model):
     review = models.ForeignKey(Review, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
     text = models.TextField()
     pub_date = models.DateTimeField(auto_now_add=True)
 
@@ -81,4 +135,4 @@ class Comment(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return f"{self.author.username} - {self.review}"
+        return f'{self.author.username} - {self.review}'

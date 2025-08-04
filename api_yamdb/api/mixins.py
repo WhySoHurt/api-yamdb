@@ -1,5 +1,5 @@
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import IsAuthorOrModeratorOrAdmin
+from .permissions import IsAdminModeratorOrAuthor
 
 
 # если будет подходить, под ваши задачи, то можно переименовать
@@ -14,7 +14,7 @@ class ReviewCommentPermissionMixin:
         if self.action in ['list', 'retrieve']:
             permission_classes = [AllowAny]
         elif self.action in ['partial_update', 'update', 'destroy']:
-            permission_classes = [IsAuthenticated, IsAuthorOrModeratorOrAdmin]
+            permission_classes = [IsAuthenticated, IsAdminModeratorOrAuthor]
         else:
             permission_classes = [IsAuthenticated]
 

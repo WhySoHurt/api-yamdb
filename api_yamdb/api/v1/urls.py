@@ -2,11 +2,9 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested import routers
 
-from users.views import SignUpView, TokenView
 from api.views import (
     CategoryViewSet, GenreViewSet, TitleViewSet,
-    ReviewViewSet, CommentViewSet)
-from users.views import UserViewSet
+    ReviewViewSet, CommentViewSet, UserViewSet, signup_view, token_view)
 
 
 v1_router = DefaultRouter()
@@ -35,8 +33,8 @@ comment_router.register(
 
 urlpatterns = [
     path('', include(v1_router.urls)),
-    path('auth/signup/', SignUpView.as_view(), name='signup'),
-    path('auth/token/', TokenView.as_view(), name='token'),
+    path('auth/signup/', signup_view, name='signup'),
+    path('auth/token/', token_view, name='token'),
     path('', include(review_router.urls)),
     path('', include(comment_router.urls)),
 ]
