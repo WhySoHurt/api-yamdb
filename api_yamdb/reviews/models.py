@@ -2,8 +2,11 @@ import datetime
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import (
+    MinValueValidator,
+    MaxValueValidator,
+    RegexValidator
+)
 from django.db import models
 
 from .constants import (
@@ -14,6 +17,7 @@ from .constants import (
     NAME_MAX_LENGTH,
     ROLE_CHOICES,
     ROLE_MAX_LENGTH,
+    NAME_MAX_LENGTH,
     SLUG_MAX_LENGTH,
     USER,
     USERNAME_MAX_LENGTH,
