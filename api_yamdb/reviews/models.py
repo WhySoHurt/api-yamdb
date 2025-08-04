@@ -1,22 +1,20 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
-
 from django.db import models
 
-
 from .constants import (
-    CHOICES_SCORE,
-    SLUG_MAX_LENGTH,
-    CHAR_MAX_LENGTH,
-    ROLE_CHOICES,
-    USER,
     ADMIN,
-    MODERATOR,
-    USERNAME_MAX_LENGTH,
+    CHAR_MAX_LENGTH,
+    CHOICES_SCORE,
     EMAIL_MAX_LENGTH,
+    MODERATOR,
+    ROLE_CHOICES,
     ROLE_MAX_LENGTH,
-    USERNAME_PATTERN
+    SLUG_MAX_LENGTH,
+    USER,
+    USERNAME_MAX_LENGTH,
+    USERNAME_PATTERN,
 )
 
 

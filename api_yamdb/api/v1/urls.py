@@ -3,9 +3,15 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_nested import routers
 
 from api.views import (
-    CategoryViewSet, GenreViewSet, TitleViewSet,
-    ReviewViewSet, CommentViewSet, UserViewSet, signup_view, token_view)
-
+    CategoryViewSet,
+    CommentViewSet,
+    GenreViewSet,
+    ReviewViewSet,
+    TitleViewSet,
+    UserViewSet,
+    signup_view,
+    token_view,
+)
 
 v1_router = DefaultRouter()
 v1_router.register('users', UserViewSet, basename='users')

@@ -1,17 +1,16 @@
 import datetime
 
 from django.contrib.auth import get_user_model
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from reviews.models import Category, Genre, Title, Review, Comment
-
 from reviews.constants import (
+    EMAIL_MAX_LENGTH,
     USERNAME_MAX_LENGTH,
     USERNAME_PATTERN,
-    EMAIL_MAX_LENGTH,
 )
+from reviews.models import Category, Comment, Genre, Review, Title
+
 from .validators import username_validator
 
 User = get_user_model()

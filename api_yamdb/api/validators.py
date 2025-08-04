@@ -1,6 +1,7 @@
 import re
 
 from django.core.exceptions import ValidationError
+
 from reviews.constants import USERNAME_PATTERN
 
 

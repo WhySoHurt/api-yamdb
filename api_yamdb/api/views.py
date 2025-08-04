@@ -1,46 +1,43 @@
 from django.conf import settings
-from django.db import IntegrityError
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
-from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets, filters
-from rest_framework.exceptions import ValidationError, NotFound
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.filters import SearchFilter
-from rest_framework.response import Response
-
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
 )
-
+from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.constants import (
+    CONFIRMATION_CODE_CHARS,
+    CONFIRMATION_CODE_LENGTH,
+    EDIT_ENDPOINT,
+)
+from reviews.models import Category, Comment, Genre, Review, Title
+
 from .filters import TitleFilter
-from .permissions import IsAdminOrReadOnly, IsAdmin, IsAuthorOrModeratorOrAdmin
+from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrModeratorOrAdmin
 from .serializers import (
     CategorySerializer,
-    GenreSerializer,
-    TitleSerializer,
-    TitleCreateSerializer,
-    ReviewSerializer,
     CommentSerializer,
+    GenreSerializer,
+    ReviewSerializer,
     SignUpSerializer,
+    TitleCreateSerializer,
+    TitleSerializer,
     TokenSerializer,
     UserSerializer,
 )
-
-from reviews.constants import (
-    EDIT_ENDPOINT,
-    CONFIRMATION_CODE_LENGTH,
-    CONFIRMATION_CODE_CHARS,
-)
-
 
 User = get_user_model()
 
