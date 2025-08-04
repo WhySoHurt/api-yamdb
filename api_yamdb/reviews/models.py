@@ -1,13 +1,62 @@
 import datetime
 
-from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
-from .constants import CHOICES_SCORE, SLUG_MAX_LENGTH, NAME_MAX_LENGTH
+from .constants import (
+    ADMIN,
+    CHOICES_SCORE,
+    EMAIL_MAX_LENGTH,
+    MODERATOR,
+    NAME_MAX_LENGTH,
+    ROLE_CHOICES,
+    ROLE_MAX_LENGTH,
+    SLUG_MAX_LENGTH,
+    USER,
+    USERNAME_MAX_LENGTH,
+    USERNAME_PATTERN,
+)
 
 
-User = get_user_model()
+class YamdbUser(AbstractUser):
+    username = models.CharField(
+        unique=True,
+        max_length=USERNAME_MAX_LENGTH,
+        verbose_name='Имя пользователя',
+        validators=[RegexValidator(regex=USERNAME_PATTERN)]
+    )
+    email = models.EmailField(unique=True, max_length=EMAIL_MAX_LENGTH)
+    first_name = models.CharField('Имя', max_length=150, blank=True)
+    last_name = models.CharField('Фамилия', max_length=150, blank=True)
+    bio = models.TextField('Биография', blank=True)
+    role = models.CharField(
+        'Права доступа',
+        max_length=ROLE_MAX_LENGTH,
+        choices=ROLE_CHOICES,
+        default=USER,
+    )
+    confirmation_code = models.CharField(max_length=128, blank=True)
+
+    REQUIRED_FIELDS = ('email',)
+
+    class Meta:
+        ordering = ('username',)
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return self.username
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN or self.is_superuser or self.is_staff
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
 
 
 def current_year():
@@ -102,7 +151,8 @@ class Review(ReviewCommentBase):
         default_related_name = 'reviews'
         constraints = [
             models.UniqueConstraint(
-                fields=['title', 'author'], name='unique_review')
+                fields=['title', 'author'], name='unique_review'
+            )
         ]
 
     def __str__(self):
