@@ -6,16 +6,16 @@ from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
     ListModelMixin, CreateModelMixin, DestroyModelMixin
 )
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
 from reviews.models import (
     Category, Genre, Title, Review, Comment)
 from .filters import TitleFilter
-from .pagination import ReviewCommentPagination
-from .permissions import IsAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsAuthorOrModeratorOrAdmin
 from .serializers import (
     CategorySerializer, GenreSerializer, TitleReadSerializer,
     TitleWriteSerializer, ReviewSerializer, CommentSerializer
 )
-from .mixins import ReviewCommentPermissionMixin
 
 
 class BaseCategoryGenreViewSet(
@@ -24,7 +24,6 @@ class BaseCategoryGenreViewSet(
 ):
     """Базовый вьюсет для категорий и жанров."""
 
-    pagination_class = ReviewCommentPagination
     lookup_field = 'slug'
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['name']
@@ -43,7 +42,6 @@ class GenreViewSet(BaseCategoryGenreViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    pagination_class = ReviewCommentPagination
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
     )
@@ -63,12 +61,13 @@ class TitleViewSet(viewsets.ModelViewSet):
         return queryset.order_by(*ordering)
 
 
-class ReviewViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
+class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для запросов к отзывам."""
 
     serializer_class = ReviewSerializer
-    pagination_class = ReviewCommentPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = [
+        IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdmin]
 
     def get_title(self):
         """Возвращает произведение по pk, указанному в URL."""
@@ -83,12 +82,13 @@ class ReviewViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=self.get_title())
 
 
-class CommentViewSet(ReviewCommentPermissionMixin, viewsets.ModelViewSet):
+class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для запросов к комментариям."""
 
     serializer_class = CommentSerializer
-    pagination_class = ReviewCommentPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = [
+        IsAuthenticatedOrReadOnly, IsAuthorOrModeratorOrAdmin]
 
     def get_review(self):
         """Возвращает отзыв по pk, указанному в URL."""
