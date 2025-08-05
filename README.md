@@ -5,11 +5,11 @@
 ## Авторы
 
 - Иван Ильницкий
-    [GitHub](https://github.com/WhySoHurt) | deddotu@yandex.ru
+    [GitHub](https://github.com/WhySoHurt) | [deddotu@yandex.ru](mailto:deddotu@yandex.ru)
 - Илья Горбачев
-    [GitHub](https://github.com/IlyaGorbachev01) | ilya-gorbachev01@yandex.ru
+    [GitHub](https://github.com/IlyaGorbachev01) | [ilya-gorbachev01@yandex.ru](mailto:ilya-gorbachev01@yandex.ru)
 - Назар Турани
-    [GitHub](https://github.com/NazarioTurani) | turani.nazar2012@yandex.ru
+    [GitHub](https://github.com/NazarioTurani) | [turani.nazar2012@yandex.ru](mailto:turani.nazar2012@yandex.ru)
 
 ## Техно-стек
 
@@ -83,7 +83,25 @@ python manage.py load_data --path static/data
 - comments.csv
 - review.csv
 
-### 7. Запуск сервера
+### 7. Создание суперпользователя 
+
+Выполните команду: 
+
+```bash
+# Если у вас MacOS/Linux
+python3 manage.py createsuperuser
+# Если у вас Windows
+python manage.py createsuperuser
+```
+
+Следуйте инструкциям: 
+- Введите имя пользователя;
+- Электронную почту (опционально);
+- Пароль (должен быть надёжным).
+     
+
+
+### 8. Запуск сервера
 
 ```python
 # Если у вас MacOS/Linux
@@ -92,8 +110,14 @@ python3 manage.py runserver
 python manage.py runserver
 ```
 
+## Доступ к админке
+
+После запуска сервера перейдите по адресу:
+[http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/).
+
+Войдите под учётными данными суперпользователя.
+
 ## Доступ к справке по API 
 
-После запуска сервера: 
-Redoc (документация API) — http://localhost:8000/redoc/
-Подробная документация с примерами запросов, описанием эндпоинтов и кодов ответов.
+После запуска сервера перейдите по адресу:  
+[Redoc (документация API)](http://localhost:8000/redoc/) — подробная документация с примерами запросов, описанием эндпоинтов и кодов ответов.
