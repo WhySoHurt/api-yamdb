@@ -8,8 +8,7 @@ from reviews.constants import (
     USERNAME_PATTERN,
 )
 from reviews.models import Category, Comment, Genre, Review, Title
-
-from .validators import username_validator
+from reviews.validators import username_validator
 
 User = get_user_model()
 
@@ -24,7 +23,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
         default=serializers.CurrentUserDefault(),
-        slug_field='username')
+        slug_field='username',
+    )
 
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
@@ -38,15 +38,16 @@ class ReviewSerializer(serializers.ModelSerializer):
         if request.method != 'POST':
             return data
 
-        title_id = self.context['view'].kwargs.get('title_pk')
+        title_id = self.context['view'].kwargs['title_pk']
 
         if Review.objects.filter(
-            title_id=title_id,
-            author=request.user
+            title_id=title_id, author=request.user
         ).exists():
+            title_name = Title.objects.only('name').get(pk=title_id).name
             raise ValidationError(
-                'Отзыв к этому произведению уже существует.')
-
+                f'Отзыв пользователя {request.user.username}'
+                f'к произведению {title_name} уже существует.'
+            )
         return data
 
 
@@ -60,7 +61,8 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
         default=serializers.CurrentUserDefault(),
-        slug_field='username')
+        slug_field='username',
+    )
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
@@ -115,7 +117,13 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        fields = ('name', 'year', 'description', 'genre', 'category')
+
+    def to_representation(self, instance):
+        """
+        Используем TitleReadSerializer для сериализации данных при выводе.
+        """
+        return TitleReadSerializer(instance, context=self.context).data
 
 
 class TokenSerializer(serializers.Serializer):
@@ -123,17 +131,19 @@ class TokenSerializer(serializers.Serializer):
         required=True,
         regex=USERNAME_PATTERN,
         max_length=USERNAME_MAX_LENGTH,
+        validators=[username_validator],
     )
     confirmation_code = serializers.CharField(required=True)
 
 
 class SignUpSerializer(serializers.Serializer):
     username = serializers.RegexField(
+        required=True,
         regex=USERNAME_PATTERN,
         max_length=USERNAME_MAX_LENGTH,
         validators=[username_validator],
     )
-    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH)
+    email = serializers.EmailField(required=True, max_length=EMAIL_MAX_LENGTH)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -147,9 +157,3 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
-
-    def update(self, instance, validated_data):
-        request = self.context.get('request')
-        if not (request and (request.user.is_admin or request.user.is_staff)):
-            validated_data['role'] = instance.role
-        return super().update(instance, validated_data)
