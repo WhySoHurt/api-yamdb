@@ -11,38 +11,49 @@ from django.db import models
 
 from .constants import (
     ADMIN,
+    CONFIRMATION_CODE_LENGTH,
     EMAIL_MAX_LENGTH,
     MAX_SCORE,
     MIN_SCORE,
     MODERATOR,
     NAME_MAX_LENGTH,
-    ROLE_CHOICES,
-    ROLE_MAX_LENGTH,
     SLUG_MAX_LENGTH,
     USER,
     USERNAME_MAX_LENGTH,
     USERNAME_PATTERN,
 )
+from .validators import username_validator
+
+ROLE_CHOICES = [
+    (USER, 'Пользователь'),
+    (MODERATOR, 'Модератор'),
+    (ADMIN, 'Администратор'),
+]
 
 
 class YamdbUser(AbstractUser):
     username = models.CharField(
         unique=True,
         max_length=USERNAME_MAX_LENGTH,
-        verbose_name='Имя пользователя',
-        validators=[RegexValidator(regex=USERNAME_PATTERN)],
+        verbose_name='Пользователь',
+        validators=[
+            RegexValidator(regex=USERNAME_PATTERN),
+            username_validator,
+        ],
     )
     email = models.EmailField(unique=True, max_length=EMAIL_MAX_LENGTH)
     first_name = models.CharField('Имя', max_length=150, blank=True)
     last_name = models.CharField('Фамилия', max_length=150, blank=True)
-    bio = models.TextField('Биография', blank=True)
+    bio = models.TextField('Описание профиля', blank=True)
     role = models.CharField(
-        'Права доступа',
-        max_length=ROLE_MAX_LENGTH,
+        'Роль',
+        max_length=max(len(role[0]) for role in ROLE_CHOICES),
         choices=ROLE_CHOICES,
         default=USER,
     )
-    confirmation_code = models.CharField(max_length=128, blank=True)
+    confirmation_code = models.CharField(
+        max_length=CONFIRMATION_CODE_LENGTH, blank=True
+    )
 
     REQUIRED_FIELDS = ('email',)
 
@@ -56,7 +67,7 @@ class YamdbUser(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == ADMIN or self.is_superuser or self.is_staff
+        return self.role == ADMIN or self.is_staff
 
     @property
     def is_moderator(self):
@@ -135,7 +146,7 @@ class ReviewCommentBase(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        verbose_name='Автор'
+        verbose_name='Автор',
     )
     text = models.TextField(verbose_name='Текст')
     pub_date = models.DateTimeField(
