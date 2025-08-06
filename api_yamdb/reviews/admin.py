@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import YamdbUser, Category, Genre, Title, Review, Comment
+from .models import Category, Comment, Genre, Review, Title, YamdbUser
 
 admin.site.empty_value_display = 'Не задано'
 

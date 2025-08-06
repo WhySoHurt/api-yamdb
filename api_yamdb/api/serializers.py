@@ -45,8 +45,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         ).exists():
             title_name = Title.objects.only('name').get(pk=title_id).name
             raise ValidationError(
-            f'Отзыв пользователя {request.user.username}' 
-            f'к произведению {title_name} уже существует.')
+                f'Отзыв пользователя {request.user.username}'
+                f'к произведению {title_name} уже существует.'
+            )
         return data
 
 
@@ -130,7 +131,7 @@ class TokenSerializer(serializers.Serializer):
         required=True,
         regex=USERNAME_PATTERN,
         max_length=USERNAME_MAX_LENGTH,
-        validators=[username_validator]
+        validators=[username_validator],
     )
     confirmation_code = serializers.CharField(required=True)
 
