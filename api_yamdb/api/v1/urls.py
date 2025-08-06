@@ -18,29 +18,11 @@ v1_router.register('users', UserViewSet, basename='users')
 v1_router.register('categories', CategoryViewSet, basename='categories')
 v1_router.register('genres', GenreViewSet, basename='genres')
 v1_router.register('titles', TitleViewSet, basename='titles')
-
-review_router = routers.NestedSimpleRouter(
-    v1_router,
-    r'titles',
-    lookup='title'
-)
-review_router.register(r'reviews', ReviewViewSet, basename='title-reviews')
-
-comment_router = routers.NestedSimpleRouter(
-    review_router,
-    r'reviews',
-    lookup='review'
-)
-comment_router.register(
-    r'comments',
-    CommentViewSet,
-    basename='reviews-comment'
-)
+v1_router.register(r'titles/(?P<title_pk>\d+)/reviews', ReviewViewSet, basename='title-reviews')
+v1_router.register(r'titles/(?P<title_pk>\d+)/reviews/(?P<review_pk>\d+)/comments', CommentViewSet, basename='review-comments')
 
 urlpatterns = [
     path('', include(v1_router.urls)),
     path('auth/signup/', signup_view, name='signup'),
     path('auth/token/', token_view, name='token'),
-    path('', include(review_router.urls)),
-    path('', include(comment_router.urls)),
 ]
