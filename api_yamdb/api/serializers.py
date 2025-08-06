@@ -115,7 +115,13 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        fields = ('name', 'year', 'description', 'genre', 'category')
+
+    def to_representation(self, instance):
+        """
+        Используем TitleReadSerializer для сериализации данных при выводе.
+        """
+        return TitleReadSerializer(instance, context=self.context).data
 
 
 class TokenSerializer(serializers.Serializer):
