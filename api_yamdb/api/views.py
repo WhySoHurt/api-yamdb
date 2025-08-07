@@ -143,10 +143,10 @@ def token_view(request):
         User, username=serializer.validated_data['username']
     )
     if user.confirmation_code != confirmation_code:
+        user.confirmation_code = ''
+        user.save(update_fields=['confirmation_code'])
         raise ValidationError({'confirmation_code': 'Неверный код'})
     token = AccessToken.for_user(user)
-    user.confirmation_code = ''
-    user.save()
     return Response({'token': str(token)}, status=status.HTTP_200_OK)
 
 
@@ -165,7 +165,7 @@ def signup_view(request):
         errors = {}
         for user in User.objects.filter(
             Q(username=username) | Q(email=email)
-        ).values('username', 'email'):
+        ).exists('username', 'email'):
             if user['username'] == username:
                 errors['username'] = (
                     'Пользователь с таким username уже существует.'
