@@ -43,7 +43,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         if Review.objects.filter(
             title_id=title_id, author=request.user
         ).exists():
-            title_name = Title.objects.only('name').get(pk=title_id).name
+            title_name = Title.objects.get(pk=title_id).name
             raise ValidationError(
                 f'Отзыв пользователя {request.user.username}'
                 f'к произведению {title_name} уже существует.'
