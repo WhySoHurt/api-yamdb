@@ -157,9 +157,9 @@ class UserSerializer(serializers.ModelSerializer):
             username_validator,
             UniqueValidator(
                 queryset=User.objects.all(),
-                message="Пользователь с таким username уже существует."
-            )
-        ]
+                message='Пользователь с таким username уже существует.',
+            ),
+        ],
     )
 
     class Meta:
@@ -172,4 +172,3 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
-    
