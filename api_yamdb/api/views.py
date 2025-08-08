@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import IntegrityError
-from django.db.models import Avg, Q
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django_filters.rest_framework import DjangoFilterBackend
@@ -26,7 +26,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from reviews.constants import (
     CONFIRMATION_CODE_CHARS,
     CONFIRMATION_CODE_LENGTH,
-    RESERVED_WORD,
+    EDIT_PROFILE_URL,
 )
 from reviews.models import Category, Genre, Review, Title
 
@@ -73,9 +73,9 @@ class GenreViewSet(BaseCategoryGenreViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.annotate(
-        rating=Avg('reviews__score')
-    ).order_by(*Title._meta.ordering)
+    queryset = Title.objects.annotate(rating=Avg('reviews__score')).order_by(
+        *Title._meta.ordering
+    )
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
     permission_classes = [IsAdminOrReadOnly]
@@ -143,10 +143,10 @@ def token_view(request):
         User, username=serializer.validated_data['username']
     )
     if user.confirmation_code != confirmation_code:
+        user.confirmation_code = ''
+        user.save(update_fields=['confirmation_code'])
         raise ValidationError({'confirmation_code': 'Неверный код'})
     token = AccessToken.for_user(user)
-    user.confirmation_code = ''
-    user.save()
     return Response({'token': str(token)}, status=status.HTTP_200_OK)
 
 
@@ -163,15 +163,14 @@ def signup_view(request):
         )
     except IntegrityError:
         errors = {}
-        for user in User.objects.filter(
-            Q(username=username) | Q(email=email)
-        ).values('username', 'email'):
-            if user['username'] == username:
-                errors['username'] = (
-                    'Пользователь с таким username уже существует.'
-                )
-            if user['email'] == email:
-                errors['email'] = 'Пользователь с таким email уже существует.'
+        if User.objects.filter(username=username).exists():
+            errors['username'] = (
+                'Пользователь с таким username уже существует.'
+            )
+
+        if User.objects.filter(email=email).exists():
+            errors['email'] = 'Пользователь с таким email уже существует.'
+
         raise ValidationError(errors)
     confirmation_code = get_random_string(
         length=CONFIRMATION_CODE_LENGTH,
@@ -205,16 +204,16 @@ class UserViewSet(viewsets.ModelViewSet):
         detail=False,
         methods=['get', 'post', 'patch'],
         permission_classes=[IsAuthenticated],
-        url_path=RESERVED_WORD,
+        url_path=EDIT_PROFILE_URL,
     )
     def edit_profile(self, request):
         user = request.user
         if request.method == 'GET':
             return Response(self.get_serializer(user).data)
-        data = request.data.copy()
-        if not user.is_admin:
-            data['role'] = user.role
-        serializer = self.get_serializer(user, data=data, partial=True)
+        serializer = self.get_serializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if not user.is_admin:
+            serializer.save(role=user.role)
+        else:
+            serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)

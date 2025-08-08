@@ -127,7 +127,7 @@ class Title(models.Model):
         Category,
         on_delete=models.SET_NULL,
         null=True,
-        verbose_name='Категория'
+        verbose_name='Категория',
     )
 
     class Meta:
@@ -168,9 +168,10 @@ class Review(AuthorContentBase):
     score = models.IntegerField(
         validators=[
             MinValueValidator(MIN_SCORE),
-            MaxValueValidator(MAX_SCORE)
+            MaxValueValidator(MAX_SCORE),
         ],
-        verbose_name='Оценка')
+        verbose_name='Оценка',
+    )
 
     class Meta(AuthorContentBase.Meta):
         verbose_name = 'отзыв'
