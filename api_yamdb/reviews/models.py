@@ -140,7 +140,7 @@ class Title(models.Model):
         return self.name
 
 
-class ReviewCommentBase(models.Model):
+class AuthorContentBase(models.Model):
     """
     Абстрактный базовый класс для отзывов и комментариев.
     """
@@ -161,7 +161,7 @@ class ReviewCommentBase(models.Model):
         default_related_name = '%(class)ss'
 
 
-class Review(ReviewCommentBase):
+class Review(AuthorContentBase):
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, verbose_name='Произведение'
     )
@@ -173,7 +173,7 @@ class Review(ReviewCommentBase):
         verbose_name='Оценка',
     )
 
-    class Meta(ReviewCommentBase.Meta):
+    class Meta(AuthorContentBase.Meta):
         verbose_name = 'отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -186,12 +186,12 @@ class Review(ReviewCommentBase):
         return f'{self.author.username} - {self.title.name}'
 
 
-class Comment(ReviewCommentBase):
+class Comment(AuthorContentBase):
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, verbose_name='Отзыв'
     )
 
-    class Meta(ReviewCommentBase.Meta):
+    class Meta(AuthorContentBase.Meta):
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
 
