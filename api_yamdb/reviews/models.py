@@ -35,19 +35,21 @@ class YamdbUser(AbstractUser):
     username = models.CharField(
         unique=True,
         max_length=USERNAME_MAX_LENGTH,
-        verbose_name='Пользователь',
+        verbose_name='Логин',
         validators=[
             RegexValidator(regex=USERNAME_PATTERN),
             username_validator,
         ],
     )
-    email = models.EmailField(unique=True, max_length=EMAIL_MAX_LENGTH)
+    email = models.EmailField(
+        'Электронная почта', unique=True, max_length=EMAIL_MAX_LENGTH
+    )
     first_name = models.CharField('Имя', max_length=150, blank=True)
     last_name = models.CharField('Фамилия', max_length=150, blank=True)
     bio = models.TextField('Описание профиля', blank=True)
     role = models.CharField(
         'Роль',
-        max_length=max(len(role[0]) for role in ROLE_CHOICES),
+        max_length=max(len(role) for role, _ in ROLE_CHOICES),
         choices=ROLE_CHOICES,
         default=USER,
     )
@@ -125,7 +127,7 @@ class Title(models.Model):
         Category,
         on_delete=models.SET_NULL,
         null=True,
-        verbose_name='Категория'
+        verbose_name='Категория',
     )
 
     class Meta:
@@ -138,7 +140,7 @@ class Title(models.Model):
         return self.name
 
 
-class ReviewCommentBase(models.Model):
+class AuthorContentBase(models.Model):
     """
     Абстрактный базовый класс для отзывов и комментариев.
     """
@@ -159,18 +161,19 @@ class ReviewCommentBase(models.Model):
         default_related_name = '%(class)ss'
 
 
-class Review(ReviewCommentBase):
+class Review(AuthorContentBase):
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, verbose_name='Произведение'
     )
     score = models.IntegerField(
         validators=[
             MinValueValidator(MIN_SCORE),
-            MaxValueValidator(MAX_SCORE)
+            MaxValueValidator(MAX_SCORE),
         ],
-        verbose_name='Оценка')
+        verbose_name='Оценка',
+    )
 
-    class Meta(ReviewCommentBase.Meta):
+    class Meta(AuthorContentBase.Meta):
         verbose_name = 'отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -183,12 +186,12 @@ class Review(ReviewCommentBase):
         return f'{self.author.username} - {self.title.name}'
 
 
-class Comment(ReviewCommentBase):
+class Comment(AuthorContentBase):
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, verbose_name='Отзыв'
     )
 
-    class Meta(ReviewCommentBase.Meta):
+    class Meta(AuthorContentBase.Meta):
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
 

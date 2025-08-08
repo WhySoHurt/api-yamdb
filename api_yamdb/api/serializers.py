@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.validators import UniqueValidator
 
 from reviews.constants import (
+    CONFIRMATION_CODE_LENGTH,
     EMAIL_MAX_LENGTH,
     USERNAME_MAX_LENGTH,
     USERNAME_PATTERN,
@@ -43,7 +45,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         if Review.objects.filter(
             title_id=title_id, author=request.user
         ).exists():
-            title_name = Title.objects.only('name').get(pk=title_id).name
+            title_name = Title.objects.get(pk=title_id).name
             raise ValidationError(
                 f'Отзыв пользователя {request.user.username}'
                 f'к произведению {title_name} уже существует.'
@@ -133,7 +135,9 @@ class TokenSerializer(serializers.Serializer):
         max_length=USERNAME_MAX_LENGTH,
         validators=[username_validator],
     )
-    confirmation_code = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(
+        required=True, max_length=CONFIRMATION_CODE_LENGTH
+    )
 
 
 class SignUpSerializer(serializers.Serializer):
@@ -147,6 +151,17 @@ class SignUpSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=USERNAME_MAX_LENGTH,
+        validators=[
+            username_validator,
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message='Пользователь с таким username уже существует.',
+            ),
+        ],
+    )
+
     class Meta:
         model = User
         fields = (
