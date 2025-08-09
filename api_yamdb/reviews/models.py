@@ -54,7 +54,9 @@ class YamdbUser(AbstractUser):
         default=USER,
     )
     confirmation_code = models.CharField(
-        max_length=CONFIRMATION_CODE_LENGTH, blank=True
+        max_length=CONFIRMATION_CODE_LENGTH,
+        null=True,
+        blank=True
     )
 
     REQUIRED_FIELDS = ('email',)
