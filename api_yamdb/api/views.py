@@ -143,7 +143,7 @@ def token_view(request):
         User, username=serializer.validated_data['username']
     )
     if user.confirmation_code != confirmation_code:
-        user.confirmation_code = ''
+        user.confirmation_code = None
         user.save(update_fields=['confirmation_code'])
         raise ValidationError({'confirmation_code': 'Неверный код'})
     token = AccessToken.for_user(user)
@@ -165,18 +165,15 @@ def signup_view(request):
         errors = {}
         if User.objects.filter(username=username).exists():
             errors['username'] = (
-                'Пользователь с таким username уже существует.'
+                'Пользователь с таким логином уже существует.'
             )
-
-        if User.objects.filter(email=email).exists():
-            errors['email'] = 'Пользователь с таким email уже существует.'
-
+        else:
+            errors['email'] = 'Электронная почта занята другим пользователем'
         raise ValidationError(errors)
-    confirmation_code = get_random_string(
+    user.confirmation_code = get_random_string(
         length=CONFIRMATION_CODE_LENGTH,
         allowed_chars=CONFIRMATION_CODE_CHARS,
     )
-    user.confirmation_code = confirmation_code
     user.save()
     send_mail(
         'Код подтверждения',
@@ -212,8 +209,5 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(self.get_serializer(user).data)
         serializer = self.get_serializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        if not user.is_admin:
-            serializer.save(role=user.role)
-        else:
-            serializer.save()
+        serializer.save(role=user.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
