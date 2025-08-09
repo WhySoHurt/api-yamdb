@@ -146,8 +146,6 @@ def token_view(request):
         user.confirmation_code = None
         user.save(update_fields=['confirmation_code'])
         raise ValidationError({'confirmation_code': 'Неверный код'})
-    user.confirmation_code = None
-    user.save(update_fields=['confirmation_code'])
     token = AccessToken.for_user(user)
     return Response({'token': str(token)}, status=status.HTTP_200_OK)
 
