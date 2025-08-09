@@ -153,13 +153,6 @@ class SignUpSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=USERNAME_MAX_LENGTH,
-        validators=[
-            username_validator,
-            UniqueValidator(
-                queryset=User.objects.all(),
-                message='Пользователь с таким username уже существует.',
-            ),
-        ],
     )
 
     class Meta:
@@ -172,3 +165,15 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
+
+    def validate_username(self, username):
+        username_validator(username)
+        user = User.objects.filter(username=username)
+        if self.instance:
+            user = user.exclude(pk=self.instance.pk)
+        if user.exists():
+            raise serializers.ValidationError(
+                'Пользователь с таким username уже существует.'
+            )
+
+        return username
